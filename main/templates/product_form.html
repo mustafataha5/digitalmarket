@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-xl">
+        {# Dynamic Heading based on 'title' context variable #}
+        <h2 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">
+            {{ title }} Product
+        </h2>
+        <p class="text-center text-gray-600 mb-8">
+            {% if title == "Edit" %}
+                Make changes to your product details below.
+            {% else %}
+                Fill out the details below to add a new product to your store.
+            {% endif %}
+        </p>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">Product Name</label>
+                <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}"
+                       value="{{ form.name.value|default_if_none:'' }}"
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm
+                              focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       placeholder="e.g., Organic Honey">
+                {% if form.name.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.name.errors|striptags }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.desc.id_for_label }}" class="block text-sm font-medium text-gray-700">Description</label>
+                <textarea name="{{ form.desc.name }}" id="{{ form.desc.id_for_label }}" rows="4"
+                          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm
+                                 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder="A detailed description of your product.">{{ form.desc.value|default_if_none:'' }}</textarea>
+                {% if form.desc.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.desc.errors|striptags }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700">Price ($)</label>
+                <input type="number" name="{{ form.price.name }}" id="{{ form.price.id_for_label }}"
+                       value="{{ form.price.value|default_if_none:'' }}"
+                       step="0.01" min="0"
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm
+                              focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       placeholder="e.g., 19.99">
+                {% if form.price.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.price.errors|striptags }}</p>
+                {% endif %}
+            </div>
+
+            {# The Category Select Box #}
+            <div>
+                <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700">Category</label>
+                <select name="{{ form.category.name }}" id="{{ form.category.id_for_label }}"
+                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm
+                               focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white">
+                    {# This loop will populate the select box with available categories #}
+                    {% for value, text in form.category.field.choices %}
+                        <option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ text }}</option>
+                    {% endfor %}
+                </select>
+                {% if form.category.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.category.errors|striptags }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.file.id_for_label }}" class="block text-sm font-medium text-gray-700">Product Image</label>
+                
+                {# Use 'product' from context which is passed by product_edit, or check form.instance directly #}
+                {% if product and product.file %} 
+                    <div class="mt-2 mb-3 flex items-center space-x-3">
+                        <span class="text-sm font-medium text-gray-600">Current Image:</span>
+                        {% if product.file.url %} 
+                            <img src="{{ product.file.url }}" alt="{{ product.name }} current image" class="w-20 h-20 object-cover rounded-md shadow-sm">
+                            <a href="{{ product.file.url }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">View Current File</a>
+                        {% else %}
+                            <p class="text-sm text-gray-500">No image uploaded yet.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <input type="file" name="{{ form.file.name }}" id="{{ form.file.id_for_label }}"
+                       class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50
+                              focus:outline-none file:mr-4 file:py-2 file:px-4
+                              file:rounded-md file:border-0 file:text-sm file:font-semibold
+                              file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+
+                {% if form.file.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.file.errors|striptags }}</p>
+                {% endif %}
+
+                {# Updated instructional text for file input in edit context #}
+                {% if product and product.file and product.file.url and product.file.url != '/static/uploads/no_image.png' %} 
+                    <p class="mt-2 text-sm text-gray-500">Leave blank to keep the current image. Select a new file to replace it.</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">Select an image for your product.</p>
+                {% endif %}
+            </div>
+
+            <div class="flex justify-end gap-3 mt-8">
+                <button type="submit"
+                        class="flex-1 py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600
+                               hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300">
+                   {{ title }} Product
+                </button>
+            </div>
+        </form>
+
+        {# Delete button should only appear when editing an existing product #}
+        {% if product %} {# Check if 'product' object exists in context #}
+            <form action="{% url 'main:product_delete' product.id %}" method="post"
+                  onsubmit="return confirm('Are you sure you want to delete \'{{ product.name }}\'? This action cannot be undone.')"
+                  class="mt-4">
+                {% csrf_token %}
+                <button type="submit"
+                        class="w-full py-3 px-4 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700
+                               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300">
+                    Delete Product
+                </button>
+            </form>
+        {% endif %}
+        
+        {# To Home button #}
+        <div class="mt-4"> {# Added margin-top for spacing #}
+            <a href="{% url 'main:index' %}"
+               class="w-full inline-flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gray-500
+                      hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-300">
+                Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

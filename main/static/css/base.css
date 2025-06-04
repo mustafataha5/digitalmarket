@@ -1,0 +1,13 @@
+ /*
+     * styles.css content (for reference, assume this is in {% static 'css/styles.css' %})
+     */
+    .btn-nav {
+      @apply py-2 px-4 font-bold bg-yellow-200 text-blue-600 rounded-lg 
+              hover:bg-yellow-300 hover:text-blue-800 
+              dark:bg-yellow-600 dark:text-yellow-100 
+              dark:hover:bg-yellow-500 dark:hover:text-white 
+              transition; /* Added transition for smooth hover effects */
+    }
+    /*
+     * Ensure this transition is enabled by including `transition` in your `btn-nav` class or adding it globally if not already present
+     */

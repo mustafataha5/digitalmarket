@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="flex  justify-center min-h-screen bg-gray-100 dark:bg-gray-900 px-4 py-8">
+    <div class="text-center bg-white dark:bg-gray-800 p-8 sm:p-10 rounded-2xl shadow-xl max-w-lg w-full transition-all duration-300 ease-in-out">
+        <div class="flex justify-center mb-6">
+            <svg class="w-24 h-24 text-indigo-500 dark:text-indigo-400" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M12 1.5c-2.478 0-4.436.438-5.604 1.488S4 5.378 4 7.5V9.75A.75.75 0 004.75 10.5h14.5a.75.75 0 00.75-.75V7.5c0-2.122-1.168-3.96-2.396-5.012C16.436 1.938 14.478 1.5 12 1.5zM12 12a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0112 12zM9 16.5a.75.75 0 00.75.75h4.5a.75.75 0 00.75-.75v-3.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 00-.75.75v3.5z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        
+        <h1 class="text-5xl sm:text-6xl font-extrabold text-gray-900 dark:text-white mb-4">
+            403
+        </h1>
+        
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+            Access Denied
+        </h2>
+        
+        <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+            Oops! It seems you don't have the necessary permissions to view this page.
+            If you believe this is an error, please try logging in with an account that has appropriate access, or contact support.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="{% url 'main:index' %}" {# Corrected from 'main:home' to 'main:index' #}
+               class="px-6 py-3 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 
+                      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
+                      dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors duration-200 transform hover:scale-105">
+                Go to Homepage
+            </a>
+            <!-- <a href="{% url 'main:login' %}" 
+               class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-lg font-medium text-indigo-700 dark:text-indigo-400 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 
+                      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
+                      transition-colors duration-200 transform hover:scale-105">
+                Login
+            </a> -->
+        </div>
+    </div>
+</div>
+{% endblock %}

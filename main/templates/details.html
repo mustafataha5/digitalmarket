@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row gap-8 items-center md:items-start bg-white shadow-xl rounded-lg p-6">
+        
+        <!-- Product Image Section -->
+        <div class="w-full md:w-1/2 flex justify-center items-center">
+            <img class="h-96 w-full object-contain rounded-lg shadow-md" src="{{ product.file.url }}" alt="{{ product.name }}">
+        </div>
+
+        <!-- Product Details Section -->
+        <div class="w-full md:w-1/2 flex flex-col justify-between p-4">
+            <div>
+                <h1 class="text-4xl font-extrabold text-gray-900 mb-4">{{ product.name }}</h1>
+                <p class="text-xl text-green-700 font-semibold mb-6">${{ product.price }}</p>
+                <p class="text-gray-700 leading-relaxed mb-8 text-base">{{ product.desc }}</p>
+
+                <div class="mb-6">
+                    <span class="text-sm font-medium text-gray-500">Availability: </span>
+                    <span class="text-sm font-semibold text-green-600">In Stock</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons and Quantity Input -->
+            <div class="flex flex-col gap-4 mt-auto">
+                {% if not in_cart %}
+                <!-- Quantity Input -->
+                <div class="flex items-center gap-4 mb-4">
+                    <label for="quantity" class="text-gray-700 font-semibold text-lg">Quantity:</label>
+                    <div class="flex items-center border border-gray-300 rounded-lg">
+                        <button type="button" id="decrement-quantity" class="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-l-lg transition duration-200">-</button>
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="10" class="w-16 text-center border-x border-gray-300 focus:outline-none text-lg py-2">
+                        <button type="button" id="increment-quantity" class="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-r-lg transition duration-200">+</button>
+                    </div>
+                </div>
+                {% endif %}
+                <!-- Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <!-- Add to Cart -->
+                      {% if not in_cart %}
+                    <form action="{% url 'main:add_to_cart' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input type="hidden" name="from_url" value="1">
+                        <input type="hidden" id="product_quantity" name="product_quantity" value="1">
+                        <button class="flex-1 py-3 px-6 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition duration-300 transform hover:scale-105">
+                            Add to Cart
+                        </button>
+                    </form>
+                    {% else %}
+                        <a href="{% url 'main:show_list' %}" class=" py-3 px-6 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition duration-300 transform hover:scale-105">
+                            To Cart
+                        </a>
+                        <a href="{% url 'main:index' %}" class=" py-3 px-6 bg-yellow-600 text-white font-semibold rounded-full shadow-md hover:bg-yellow-700 transition duration-300 transform hover:scale-105">
+                            To Home
+                        </a>
+                    {% endif %}
+
+                    {% if not in_wishlist and not in_cart %}
+                    <!-- Add to Wishlist -->
+                    <form action="{% url 'main:add_to_wishlist' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <button class="flex-1 py-3 px-6 border border-gray-300 text-gray-700 font-semibold rounded-full shadow-md hover:bg-gray-100 transition duration-300 transform hover:scale-105">
+                            Add to Wishlist
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for quantity handling -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const quantityInput = document.getElementById('quantity');
+        const decrementButton = document.getElementById('decrement-quantity');
+        const incrementButton = document.getElementById('increment-quantity');
+        const productQuantity = document.getElementById('product_quantity');
+
+        function updateHiddenQuantity() {
+            productQuantity.value = quantityInput.value;
+        }
+
+        decrementButton.addEventListener('click', function () {
+            let currentValue = parseInt(quantityInput.value);
+            if (currentValue > parseInt(quantityInput.min)) {
+                quantityInput.value = currentValue - 1;
+                updateHiddenQuantity();
+            }
+        });
+
+        incrementButton.addEventListener('click', function () {
+            let currentValue = parseInt(quantityInput.value);
+            quantityInput.value = currentValue + 1;
+            updateHiddenQuantity();
+        });
+
+        quantityInput.addEventListener('change', function () {
+            if (parseInt(quantityInput.value) < parseInt(quantityInput.min)) {
+                quantityInput.value = quantityInput.min;
+            }
+            updateHiddenQuantity();
+        });
+    });
+</script>
+{% endblock %}

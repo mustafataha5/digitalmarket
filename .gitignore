@@ -1,0 +1,151 @@
+# .gitignore for Django projects
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# C extensions
+*.pyd
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+.hypothesis/
+
+# venv
+venv/
+env/
+/bin/activate
+/bin/activate.csh
+/bin/activate.fish
+/bin/activate.ps1
+/bin/activate.sh
+/bin/activate.bat
+/bin/activate.nu
+/bin/pip
+/bin/pip3
+/bin/python
+/bin/python3
+/include
+/lib
+/lib64
+/pyvenv.cfg
+/share
+/Scripts
+/tcl
+
+# macOS specific files
+.DS_Store
+.Trashes/
+._*
+
+# Windows specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE-specific files
+.idea/                  # JetBrains IDEs (PyCharm, IntelliJ)
+*.swp                   # Vim swap files
+*.swo                   # Vim swap files (persistent)
+.vscode/                # VS Code
+*.sublime-project       # Sublime Text
+*.sublime-workspace     # Sublime Text
+.history/               # VS Code Local History
+.mypy_cache/            # MyPy static type checker
+.dmypy.json             # MyPy daemon mode
+.ruff_cache/            # Ruff linter cache
+
+# Django specific
+*.log
+*.pot
+*.mo
+*.po
+db.sqlite3              # Local SQLite database
+media/                  # User-uploaded files (if not served by a CDN)
+static/                 # Collected static files (if not served by a CDN)
+# If you are using a separate directory for uploaded media files
+# media/
+# If you are collecting static files to a 'static' directory
+# static/
+
+# Local settings
+local_settings.py
+.env                    # Environment variables file
+
+# Celerybeat schedule file
+celerybeat-schedule
+
+# AWS Elastic Beanstalk
+.elasticbeanstalk/
+
+# Docker
+.dockerignore
+Dockerfile.bak
+
+# Node.js (if you have frontend assets in your Django project)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# If you use pytest-django
+.pytest_cache/
+
+# Bandit (security linter)
+.bandit/
+
+# Black (code formatter)
+.black/
+
+# Flake8 (linter)
+.flake8
+
+# Coverage.py
+.coverage
+.coverage.*
+
+# Pytest
+.pytest_cache/
+
+# Sphinx documentation
+docs/_build/
+
+# Jupyter Notebook (if you use it)
+.ipynb_checkpoints/
+
+# System files
+.directory
+
+# Add your own custom files here
+# For example, if you have a custom development database
+# dev.sqlite3

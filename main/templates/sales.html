@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8 sm:py-12">
+    <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white mb-8 text-center leading-tight">
+        Detailed Product Sales Report
+    </h1>
+
+    {# Chart Section - Only show if there's data for it #}
+    {% if products_data_for_chart %}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Total Revenue Per Product</h2>
+        <div class="relative h-80 md:h-96"> {# This height is CRUCIAL for Chart.js to render #}
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Table Section - Remains the same #}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Product Sales Data</h2>
+        {% if products %}
+        <table class="min-w-full table-auto divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider rounded-tl-lg">Name</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Orders</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total Sales</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total Revenue ($)</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Daily Sales</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Weekly Sales</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Monthly Sales</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider rounded-tr-lg">Annual Sales</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {% for product in products %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 max-w-xs overflow-hidden text-ellipsis">{{ product.desc|default:"N/A" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">{{ product.number_of_orders|default:0 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">{{ product.number_of_sales|default:0 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 dark:text-green-400 font-semibold text-center">${{ product.total_sales_price|floatformat:2|default:"0.00" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">{{ product.daily_sales|default:0 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">{{ product.weekly_sales|default:0 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">{{ product.monthly_sales|default:0 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">{{ product.annual_sales|default:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-center text-gray-600 dark:text-gray-300 text-lg py-8">No detailed sales data available for your products.</p>
+        {% endif %}
+    </div>
+
+    {# Chart.js CDN (placed near the end of body for performance) #}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {# Embed the JSON data safely for Chart.js #}
+   
+    {% if products_data_for_chart %}
+    {{ products_data_for_chart|json_script:"product_data_for_chart_json_id" }}
+    {% endif %}
+
+    {# Your custom JavaScript for chart creation #}
+    <script>
+        // Use a DOMContentLoaded listener to ensure the HTML is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the JSON data from the script tag generated by Django's json_script
+            // The ID here MUST match the ID you passed to json_script filter.
+            const productDataElement = document.getElementById('product_data_for_chart_json_id'); // Corrected ID
+            let productsData = [];
+
+            if (productDataElement) {
+                productsData = JSON.parse(productDataElement.textContent);
+            }
+
+            const productNames = productsData.map(p => p.name);
+            const productRevenues = productsData.map(p => p.total_sales_price || 0);
+
+            let salesChartInstance; // Declare chart instance globally
+
+            // Initialize Sales Chart ONLY if there's data AND the canvas element exists
+            const salesChartCanvas = document.getElementById('salesChart');
+            if (salesChartCanvas && productsData.length > 0) {
+                const ctx = salesChartCanvas.getContext('2d');
+                salesChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: productNames,
+                        datasets: [{
+                            label: 'Total Revenue ($)',
+                            data: productRevenues,
+                            backgroundColor: 'rgba(79, 70, 229, 0.7)', // Indigo-600 with transparency
+                            borderColor: 'rgba(79, 70, 229, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4, // Rounded bars
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // Allows chart to respect parent div height
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Total Revenue Per Product',
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--text-color-primary') || '#333',
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                }
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-color-primary') || '#333',
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return '$' + context.parsed.y.toFixed(2);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Revenue ($)',
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-color-secondary') || '#666',
+                                },
+                                ticks: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-color-secondary') || '#666',
+                                },
+                                grid: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--border-color-light') || 'rgba(0, 0, 0, 0.1)',
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Product',
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-color-secondary') || '#666',
+                                },
+                                ticks: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-color-secondary') || '#666',
+                                },
+                                grid: {
+                                    color: getComputedStyle(document.documentElement).getPropertyValue('--border-color-light') || 'rgba(0, 0, 0, 0.1)',
+                                }
+                            }
+                        }
+                    }
+                });
+                window.salesChartInstance = salesChartInstance; // Make available globally for theme changes
+            }
+
+            // --- Dark Mode Chart Colors Logic ---
+            // Ensure these CSS variables are defined in your base.html <style> block or main CSS file:
+            // :root {
+            //   --text-color-primary: #1f2937; /* gray-900 */
+            //   --text-color-secondary: #4b5563; /* gray-700 */
+            //   --border-color-light: #e5e7eb; /* gray-200 */
+            //   --background-color: #f3f4f6; /* gray-100 */
+            // }
+            // .dark {
+            //   --text-color-primary: #f9fafb; /* white */
+            //   --text-color-secondary: #d1d5db; /* gray-300 */
+            //   --border-color-light: #374151; /* gray-700 */
+            //   --background-color: #1f2937; /* gray-900 */
+            // }
+
+            function updateChartColors() {
+                // Only attempt to update if the chart instance exists
+                if (!window.salesChartInstance) {
+                    return;
+                }
+
+                const isDarkMode = document.documentElement.classList.contains('dark');
+                const primaryTextColor = isDarkMode ? '#f9fafb' : '#1f2937';
+                const secondaryTextColor = isDarkMode ? '#d1d5db' : '#4b5563';
+                const gridColor = isDarkMode ? 'rgba(80,80,80,0.5)' : 'rgba(200,200,200,0.5)';
+
+                // Update chart options
+                window.salesChartInstance.options.plugins.title.color = primaryTextColor;
+                window.salesChartInstance.options.plugins.legend.labels.color = primaryTextColor;
+                window.salesChartInstance.options.scales.x.title.color = secondaryTextColor;
+                window.salesChartInstance.options.scales.x.ticks.color = secondaryTextColor;
+                window.salesChartInstance.options.scales.x.grid.color = gridColor;
+                window.salesChartInstance.options.scales.y.title.color = secondaryTextColor;
+                window.salesChartInstance.options.scales.y.ticks.color = secondaryTextColor;
+                window.salesChartInstance.options.scales.y.grid.color = gridColor;
+                
+                window.salesChartInstance.update(); // Re-render the chart with new colors
+            }
+
+            // Add event listener to your theme toggle button
+            const themeToggleButton = document.getElementById('theme-toggle');
+            if (themeToggleButton) {
+                themeToggleButton.addEventListener('click', updateChartColors);
+            }
+            
+            // Initial call to set correct chart colors based on default theme on page load
+            // This is called inside DOMContentLoaded, ensuring the chart might have been created.
+            updateChartColors(); 
+        }); // End of DOMContentLoaded
+    </script>
+</div>
+{% endblock %}
